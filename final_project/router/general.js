@@ -63,7 +63,7 @@ public_users.get("/author/:author", async function (req, res) {
   try {
     const response = await axios.get('http://localhost:5000/');
     const filteredBooks = Object.values(response.data).filter(book => book.author === authorName);
-    return res.status(200).json(filteredBooks);
+    return res.status(200).json({booksbyauthor:filteredBooks});
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -76,7 +76,7 @@ public_users.get("/title/:title", async function (req, res) {
   try {
     const response = await axios.get('http://localhost:5000/');
     const filteredBooks = Object.values(response.data).filter(book => book.title === titleName);
-    return res.status(200).json(filteredBooks);
+    return res.status(200).json({booksbytitle:filteredBooks});
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -84,19 +84,26 @@ public_users.get("/title/:title", async function (req, res) {
 
 
 //  Get book review
-public_users.get("/isbn/:isbn", async function (req, res) {
+public_users.get("/review/:isbn", async function (req, res) {
   const isbn = req.params.isbn;
   try {
-    const response = await axios.get(`http://localhost:5000/${isbn}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return res.status(404).json({ message: "Book not found" });
+    const response = await axios.get('http://localhost:5000/');
+    const book = response.data[isbn];
+
+    if (book) {
+      if (Object.keys(book.reviews).length > 0) {
+        return res.status(200).json(book.reviews);
+      } else {
+        return res.status(404).json({});
+      }
     } else {
-      return res.status(500).json({ message: "Internal server error" });
+      return res.status(404).json({ message: "Book not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 
 module.exports.general = public_users;
